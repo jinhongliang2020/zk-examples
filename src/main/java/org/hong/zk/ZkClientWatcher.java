@@ -1,3 +1,5 @@
+package org.hong.zk;
+
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 
@@ -7,7 +9,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * zk 客户端编程测试.
+ * zk 原生客户端编程测试.
  * Created by hong on 2017/9/2.
  */
 public class ZkClientWatcher implements Watcher {
