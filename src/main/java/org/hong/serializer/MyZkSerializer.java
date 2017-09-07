@@ -7,7 +7,7 @@ import java.io.UnsupportedEncodingException;
 
 /**
  * 实现ZkSerializer,自定义序列化方式.
- * Created by Administrator on 2017/9/7.
+ * Created by hong on 2017/9/7.
  */
 public class MyZkSerializer implements ZkSerializer {
     @Override

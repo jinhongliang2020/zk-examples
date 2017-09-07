@@ -1,6 +1,8 @@
 package org.hong.zkclient;
 
 import org.I0Itec.zkclient.ZkClient;
+import org.I0Itec.zkclient.serialize.SerializableSerializer;
+import org.I0Itec.zkclient.serialize.ZkSerializer;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 import org.hong.serializer.MyZkSerializer;
@@ -13,9 +15,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * Created by hong on 2017/9/7.
  */
 public class zkClientTest {
+
     public static ReentrantLock lock = new ReentrantLock();
     public static Condition condition = lock.newCondition();
-
     public static void main(String[] args) throws InterruptedException {
         lock.lock();
 
@@ -23,20 +25,29 @@ public class zkClientTest {
         // 如果是集群,以逗号分隔
         String zkServer = "127.0.0.1:2181";
         // new MyZkSerializer() 创建序列化器接口，用来序列化和反序列化
-        ZkClient zkClient = new ZkClient(zkServer, 1000, 1000, new MyZkSerializer());
-
+        ZkClient zkClient = getZkClient(zkServer,new MyZkSerializer());
 
         //2. 获取对应zk 节点数据.
         Stat stat = new Stat();
         Object data = zkClient.readData("/zkTest", stat);
         System.out.println("获取到/zkTest 节点数据：" + data);
 
-
         //3.创建一个节点
         String nodePath = "/test";
         String zkData = "hello zk";
         createNode(zkClient, nodePath, zkData);
         System.out.println("获取到刚刚新增节点数据：" + zkClient.readData(nodePath));
+
+        /**
+         * 创建节点，存储对象
+         */
+        ZkClient zkClientObj = getZkClient(zkServer,new SerializableSerializer());
+        User user = new User();
+        user.setId(1);
+        user.setName("zk");
+        createNode(zkClientObj,"/user-node",user);
+        // 获取节点数据,返回存储User对象.
+        System.out.println(zkClientObj.readData("/user-node",stat).toString());
 
         //4.删除节点
         nodePath = "/wp";
@@ -46,12 +57,22 @@ public class zkClientTest {
         nodePath = "/test";
         updateNodeData(zkClient, nodePath, "111");
 
-
+        // 监听节点和数据变化.
         zkClient.subscribeChildChanges(nodePath,new ZkChildListener());
         zkClient.subscribeDataChanges(nodePath,new ZkDataListener());
 
         condition.await();
     }
+
+    /**
+     * 使用指定序列化方式交互数据.
+     * @param zkServer
+     * @return
+     */
+    private static ZkClient getZkClient(String zkServer, ZkSerializer zkSerializer) {
+        return new ZkClient(zkServer, 1000, 1000, zkSerializer);
+    }
+
 
     /**
      * 更新数据.
@@ -91,12 +112,12 @@ public class zkClientTest {
      * @param zkClient
      * @param nodePath
      */
-    private static void createNode(ZkClient zkClient, String nodePath, Object data) {
+    private static String createNode(ZkClient zkClient, String nodePath, Object data) {
         if (existsNode(zkClient, nodePath)) {
             System.out.println("已存在对应节点.");
-            return;
+            return null;
         }
-        zkClient.create(nodePath, data, CreateMode.PERSISTENT);
+        return zkClient.create(nodePath, data, CreateMode.PERSISTENT);
     }
 
 
@@ -105,10 +126,10 @@ public class zkClientTest {
      *
      * @param zkClient
      * @param nodePath
-     * @param isDelChild 是否含有子节点 分速度
+     * @param isDelChild 是否含有子节点需要删除.
      */
     private static void deleteNode(ZkClient zkClient, String nodePath, Boolean isDelChild) {
-        Boolean flag = false;
+        Boolean flag;
         if (!isDelChild) {
             flag = zkClient.delete(nodePath);
         } else {
@@ -116,9 +137,5 @@ public class zkClientTest {
         }
         System.out.println("删除是否成功:" + flag);
     }
-
-
-
-
 
 }

@@ -61,6 +61,7 @@ public class ZkClientWatcher implements Watcher {
         System.out.println(path);
 
         // Watcher 置 ，一旦触发一次即会失效，如果需要一直监听 ，就需要重新注册
+        // 这算是原生api 没有处理好的地方
         try {
             ZkClientWatcher watcher = new ZkClientWatcher();
             zk.getChildren(path, watcher);
