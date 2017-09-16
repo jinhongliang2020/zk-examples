@@ -26,22 +26,27 @@ public class ZkClientWatcher implements Watcher {
             ZkClientWatcher zkClientWatcher = new ZkClientWatcher();
             zk = new ZooKeeper("localhost:2181", 3000, zkClientWatcher);
 
-            List<String> nodeList = zk.getChildren("/zktest", true);
+            // 暂停3s 让客户端建立连接.
+            Thread.sleep(3000);
 
-
-            nodeList.forEach(node -> System.out.println(node));
-
-
-            // 创建节点
-            zkClientWatcher.createPath("/nodeTest", "111");
+            // 主动watcher 一下.
+            zk.getChildren("/nodeTest", true);
 
             // 判断节点是否存在
-            Boolean exists = zkClientWatcher.isExists("/nodeTest");
+            Boolean exists = zkClientWatcher.isExists("/nodeTest",true);
+            if(!exists){
+                // 创建节点
+                zkClientWatcher.createPath("/nodeTest", "111");
+            }
             System.out.println("nodeTest节点是否存在：" + exists);
 
             // 获取节点数据
             String data = zkClientWatcher.readData("/nodeTest");
             System.out.println("nodeTest节点数据：" + data);
+
+            //获取对应所有节点，返回一个List<String>
+            List<String> nodeList = zk.getChildren("/nodeTest", true);
+            nodeList.forEach(node -> System.out.println(node));
 
             // 保证主程序不停止，否则无法查看watchedEvent 返回内容.
             // 设置当前线程进入等待
@@ -58,18 +63,18 @@ public class ZkClientWatcher implements Watcher {
 
     public void process(WatchedEvent watchedEvent) {
         String path = watchedEvent.getPath();
-        System.out.println(path);
+        System.out.println(""+path);
 
         // Watcher 置 ，一旦触发一次即会失效，如果需要一直监听 ，就需要重新注册
         // 这算是原生api 没有处理好的地方
-        try {
-            ZkClientWatcher watcher = new ZkClientWatcher();
-            zk.getChildren(path, watcher);
-        } catch (KeeperException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            ZkClientWatcher watcher = new ZkClientWatcher();
+//            zk.getChildren(path, watcher);
+//        } catch (KeeperException e) {
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     /**
@@ -188,9 +193,9 @@ public class ZkClientWatcher implements Watcher {
      * @param path zNode节点路径
      * @return 存在返回true, 反之返回false
      */
-    public boolean isExists(String path) {
+    public boolean isExists(String path,Boolean isWatched) {
         try {
-            Stat stat = this.zk.exists(path, false);
+            Stat stat = this.zk.exists(path, isWatched);
             return null != stat;
         } catch (KeeperException e) {
             System.out.println("读取数据失败,发生KeeperException! path: " + path
