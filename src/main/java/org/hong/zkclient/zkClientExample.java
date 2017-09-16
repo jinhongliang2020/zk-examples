@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * 第三方客户端zkclient 使用.
  * Created by hong on 2017/9/7.
  */
-public class zkClientTest {
+public class zkClientExample {
 
     public static ReentrantLock lock = new ReentrantLock();
     public static Condition condition = lock.newCondition();
