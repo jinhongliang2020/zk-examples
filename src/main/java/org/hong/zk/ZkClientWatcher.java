@@ -78,6 +78,7 @@ public class ZkClientWatcher implements Watcher {
         // 这算是原生api 没有处理好的地方
         try {
             ZkClientWatcher watcher = new ZkClientWatcher();
+            // 注：在重新监听的时候，需要注意是监听当前节点还是子节点.
             zk.exists(path, watcher);
         } catch (KeeperException e) {
             e.printStackTrace();
