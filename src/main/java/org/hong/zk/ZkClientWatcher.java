@@ -30,10 +30,10 @@ public class ZkClientWatcher implements Watcher {
             // 通过 种方式注 的watcher将会作 整个zk会话期间的默认watcher，会一直被 保 在客户端ZKWatchManager的defaultWatcher中，
             // 如果有 它的 置，则 个 watcher会被覆盖
             ZkClientWatcher zkClientWatcher = new ZkClientWatcher();
-            zk = new ZooKeeper("127.0.0.1:2181", 3000, zkClientWatcher);
+            zk = getZkClient("localhost:2181", 3000, zkClientWatcher);
 
             // 暂停3s 让客户端建立连接.
-//            Thread.sleep(3000);
+            Thread.sleep(3000);
 
             // 主动watcher 一下.
             zk.getChildren("/nodeTest", true);
@@ -59,12 +59,24 @@ public class ZkClientWatcher implements Watcher {
             condition.await();
         } catch (InterruptedException e) {
             System.out.println("连接创建失败，发生 InterruptedException , e " + e.getMessage());
-        } catch (IOException e) {
-            System.out.println("连接创建失败，发生 IOException , e " + e.getMessage());
         } catch (KeeperException e) {
             System.out.println("获取zk数据异常, e " + e.getMessage());
         }
 
+    }
+
+    private static ZooKeeper getZkClient(String s, int i, ZkClientWatcher zkClientWatcher) {
+        ZooKeeper zk=null;
+        try {
+            zk= new ZooKeeper("localhost:2181", 3000, zkClientWatcher);
+            // 等待连接成功.
+            connectedLatch.await();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return zk;
     }
 
     public void process(WatchedEvent watchedEvent) {
