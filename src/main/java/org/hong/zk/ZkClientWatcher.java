@@ -27,11 +27,11 @@ public class ZkClientWatcher implements Watcher {
             ZkClientWatcher zkClientWatcher = new ZkClientWatcher();
             zk = getZkClient("127.0.0.1:2181", 3000, zkClientWatcher);
 
-            // 暂停3s 让客户端建立连接.
             Thread.sleep(3000);
 
             // 主动watcher 一下.
-            zk.getChildren("/nodeTest", true);
+            Stat stat =new Stat();
+            zk.getData("/nodeTest", true,stat);
 
             // 判断节点是否存在
             Boolean exists = zkClientWatcher.isExists("/nodeTest");
@@ -78,7 +78,7 @@ public class ZkClientWatcher implements Watcher {
         // 这算是原生api 没有处理好的地方
         try {
             ZkClientWatcher watcher = new ZkClientWatcher();
-            zk.getChildren(path, watcher);
+            zk.exists(path, watcher);
         } catch (KeeperException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -204,7 +204,7 @@ public class ZkClientWatcher implements Watcher {
      */
     public boolean isExists(String path) {
         try {
-            Stat stat = this.zk.exists(path,false);
+            Stat stat = this.zk.exists(path,true);
             return null != stat;
         } catch (KeeperException e) {
             System.out.println("读取数据失败,发生KeeperException! path: " + path
