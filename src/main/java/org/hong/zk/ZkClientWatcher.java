@@ -16,13 +16,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ZkClientWatcher implements Watcher {
 
     private static ZooKeeper zk = null;
-
-    private static CountDownLatch connectedLatch = new CountDownLatch(1);
-
     public static ReentrantLock lock = new ReentrantLock();
     public static Condition condition = lock.newCondition();
-
-
 
     public static void main(String[] args) {
         try {
@@ -30,7 +25,7 @@ public class ZkClientWatcher implements Watcher {
             // 通过 种方式注 的watcher将会作 整个zk会话期间的默认watcher，会一直被 保 在客户端ZKWatchManager的defaultWatcher中，
             // 如果有 它的 置，则 个 watcher会被覆盖
             ZkClientWatcher zkClientWatcher = new ZkClientWatcher();
-            zk = getZkClient("localhost:2181", 3000, zkClientWatcher);
+            zk = getZkClient("127.0.0.1:2181", 3000, zkClientWatcher);
 
             // 暂停3s 让客户端建立连接.
             Thread.sleep(3000);
@@ -69,11 +64,7 @@ public class ZkClientWatcher implements Watcher {
         ZooKeeper zk=null;
         try {
             zk= new ZooKeeper("localhost:2181", 3000, zkClientWatcher);
-            // 等待连接成功.
-            connectedLatch.await();
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return zk;
@@ -81,7 +72,7 @@ public class ZkClientWatcher implements Watcher {
 
     public void process(WatchedEvent watchedEvent) {
         String path = watchedEvent.getPath();
-        System.out.println(""+path);
+        System.out.println("node path:"+path);
 
         // Watcher 置 ，一旦触发一次即会失效，如果需要一直监听 ，就需要重新注册
         // 这算是原生api 没有处理好的地方
