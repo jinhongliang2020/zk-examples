@@ -10,6 +10,7 @@ import org.hong.zkclient.listener.ZkChildListener;
 import org.hong.zkclient.listener.ZkDataListener;
 import org.hong.zkclient.serializer.MyZkSerializer;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -17,54 +18,79 @@ import java.util.concurrent.locks.ReentrantLock;
  * 第三方客户端zkclient 使用.
  * Created by hong on 2017/9/7.
  */
-public class zkClientExample {
+public class ZkClientExample {
 
-    public static ReentrantLock lock = new ReentrantLock();
-    public static Condition condition = lock.newCondition();
+    /**
+     * zookeeper地址
+     */
+    public static final String CONNECT_URL = "127.0.0.1:2181";
+    /**
+     * session超时时间
+     */
+    public static final int SESSION_OUTTIME = 3000;//ms
+
+    /**
+     * 连接超时时间
+     */
+    public static final int CONNECTION_TIMEOUT =3000;
+
+    /**
+     * 基本操作节点
+     */
+    public static final String NODE_PATH="/nodeTest";
+
+    /**
+     * 对象存储节点.
+     */
+    public static final String OBJECT_NODE_PATH="/node";
+
+    /** 信号量，阻塞程序执行，用于等待zookeeper连接成功，发送成功信号 */
+    private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
+
     public static void main(String[] args) throws InterruptedException {
-        lock.lock();
 
-        //1. 创建zkClient 连接.
-        // 如果是集群,以逗号分隔
-        String zkServer = "127.0.0.1:2181";
+        // 创建zkClient 连接.
         // new MyZkSerializer() 创建序列化器接口，用来序列化和反序列化
-        ZkClient zkClient = getZkClient(zkServer,new MyZkSerializer());
+        ZkClient zkClient = getZkClient(CONNECT_URL,new MyZkSerializer());
 
-        //2. 获取对应zk 节点数据.
+        // 订阅子节点信息变化
+        zkClient.subscribeChildChanges(NODE_PATH,new ZkChildListener());
+        // 订阅节点数据改变
+        zkClient.subscribeDataChanges(NODE_PATH,new ZkDataListener());
+
+
+        // 创建一个节点（判断是否存在对应节点，没有才创建）
+        if(!zkClient.exists(NODE_PATH)) {
+            String zkData = "hello zk";
+            createNode(zkClient, NODE_PATH, zkData);
+        }
+
+        // 获取对应zk 节点数据.
         Stat stat = new Stat();
-        Object data = zkClient.readData("/zkTest", stat);
-        System.out.println("获取到/zkTest 节点数据：" + data);
+        Object data = zkClient.readData(NODE_PATH, stat);
+        System.out.println("获取到"+NODE_PATH+" 节点数据：" + data);
 
-        //3.创建一个节点
-        String nodePath = "/test";
-        String zkData = "hello zk";
-        createNode(zkClient, nodePath, zkData);
-        System.out.println("获取到刚刚新增节点数据：" + zkClient.readData(nodePath));
+
+        // 更新节点的数据
+        updateNodeData(zkClient, NODE_PATH, "111");
+        System.out.println(NODE_PATH +" 节点更新后的数据："+zkClient.readData(NODE_PATH));
+
+        // 删除节点
+        deleteNode(zkClient, NODE_PATH, true);
+        System.out.println(NODE_PATH+" 节点是否存在："+zkClient.exists(NODE_PATH));
 
         /**
          * 创建节点，存储对象
          */
-        ZkClient zkClientObj = getZkClient(zkServer,new SerializableSerializer());
+        ZkClient zkClientObj = getZkClient(CONNECT_URL,new SerializableSerializer());
         User user = new User();
         user.setId(1);
-        user.setName("zk");
-        createNode(zkClientObj,"/user-node",user);
+        user.setName("zk深入学习");
+        createNode(zkClientObj,OBJECT_NODE_PATH,user);
         // 获取节点数据,返回存储User对象.
-        System.out.println(zkClientObj.readData("/user-node",stat).toString());
+        System.out.println(zkClientObj.readData(OBJECT_NODE_PATH,stat).toString());
 
-        //4.删除节点
-        nodePath = "/wp";
-        deleteNode(zkClient, nodePath, true);
-
-        //5.更新节点的数据
-        nodePath = "/test";
-        updateNodeData(zkClient, nodePath, "111");
-
-        // 监听节点和数据变化.
-        zkClient.subscribeChildChanges(nodePath,new ZkChildListener());
-        zkClient.subscribeDataChanges(nodePath,new ZkDataListener());
-
-        condition.await();
+        connectedSemaphore.await();
     }
 
     /**
@@ -73,7 +99,7 @@ public class zkClientExample {
      * @return
      */
     private static ZkClient getZkClient(String zkServer, ZkSerializer zkSerializer) {
-        return new ZkClient(zkServer, 1000, 1000, zkSerializer);
+        return new ZkClient(zkServer, SESSION_OUTTIME, CONNECTION_TIMEOUT, zkSerializer);
     }
 
 
