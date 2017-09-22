@@ -19,7 +19,7 @@ public class TestZkWatcher {
     /**
      * zookeeper地址
      */
-    public static final String CONNECT_URL = "192.168.0.90:2181";
+    public static final String CONNECT_URL = "127.0.0.1:2181";
     /**
      * session超时时间
      */

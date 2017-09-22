@@ -25,7 +25,7 @@ public class ZkWatcher implements Watcher {
 
 
     /** zookeeper服务器地址 */
-    public static final String CONNECTION_ADDR = "192.168.0.90:2181";
+    public static final String CONNECTION_ADDR = "127.0.0.1:2181";
     /** 定义session失效时间 */
     public static final int SESSION_TIMEOUT = 3000;
 
