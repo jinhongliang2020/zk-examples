@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * zk auth 测试.
+ * zk auth 认证测试.
  */
 public class ZkAuth{
 
@@ -28,11 +28,6 @@ public class ZkAuth{
     /** 标识 **/
     private static final String LOG_PREFIX_OF_MAIN = "【Main】";
 
-    /**
-     * 测试认证
-     * @param args
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         ZkAuth testAuth = new ZkAuth();
         ZkAuthWatcher zkAuthWatcher =new ZkAuthWatcher();
