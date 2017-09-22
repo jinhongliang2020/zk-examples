@@ -1,4 +1,4 @@
-package org.hong.zkclient;
+package org.hong.zkclient.entity;
 
 import java.io.Serializable;
 

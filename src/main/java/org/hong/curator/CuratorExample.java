@@ -13,6 +13,7 @@ import org.apache.zookeeper.data.Stat;
  * 1.Curator框架提供了一套高级的API， 简化了ZooKeeper的操作。 它增加了很多使用ZooKeeper开发的特性，可以处理ZooKeeper集群复杂的连接管理和重试机制
  * 2.简化了原生的ZooKeeper的方法，事件等
  * 3.提供了一个现代的流式接口
+ * 4.提供了分布式锁、分布式计数器、barrier等等.
  */
 public class CuratorExample {
 
@@ -59,10 +60,6 @@ public class CuratorExample {
             // 获取节点数据.
             byte[] bytes = client.getData().watched().forPath("/head");
             System.out.println("/head 节点数据:"+ new String(bytes));
-
-            //
-
-
 
         } catch (Exception e) {
             e.printStackTrace();

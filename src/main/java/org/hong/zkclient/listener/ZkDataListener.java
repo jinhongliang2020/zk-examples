@@ -1,4 +1,4 @@
-package org.hong.zkclient;
+package org.hong.zkclient.listener;
 
 import org.I0Itec.zkclient.IZkDataListener;
 
@@ -10,12 +10,10 @@ import org.I0Itec.zkclient.IZkDataListener;
 public class ZkDataListener implements IZkDataListener{
 
 
-    @Override
     public void handleDataChange(String dataPath, Object data) throws Exception {
         System.out.println(dataPath+":"+data.toString());
     }
 
-    @Override
     public void handleDataDeleted(String dataPath) throws Exception {
         System.out.println(dataPath);
     }

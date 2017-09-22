@@ -1,4 +1,4 @@
-package org.hong.serializer;
+package org.hong.zkclient.serializer;
 
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
