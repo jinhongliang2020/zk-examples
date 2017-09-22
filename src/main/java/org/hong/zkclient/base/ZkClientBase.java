@@ -1,4 +1,4 @@
-package org.hong.zkclient;
+package org.hong.zkclient.base;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.serialize.SerializableSerializer;
