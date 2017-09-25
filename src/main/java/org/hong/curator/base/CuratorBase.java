@@ -1,4 +1,4 @@
-package org.hong.curator;
+package org.hong.curator.base;
 
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -15,17 +15,19 @@ import org.apache.zookeeper.data.Stat;
  * 3.提供了一个现代的流式接口
  * 4.提供了分布式锁、分布式计数器、barrier等等.
  */
-public class CuratorExample {
-
-    /**
-     * zk 目录节点.
-     */
-    private static final String PATH = "/example/basic";
+public class CuratorBase {
 
     /**
      * zk 连接地址.
      */
     private static final String CONNECTION_URL = "127.0.0.1:2181";
+
+    /**
+     * zk 目录节点.
+     */
+    private static final String PATH = "/curator/basic";
+
+    private static final String PATH_2="/nodeTest";
 
     public static void main(String[] args) {
         CuratorFramework client = null;
@@ -49,17 +51,17 @@ public class CuratorExample {
             System.out.println(new String(client.getData().forPath(PATH)));
 
             // 创建一个节点;
-            Stat statHead = client.checkExists().forPath("/head");
+            Stat statHead = client.checkExists().forPath(PATH_2);
             if(statHead!=null) {
                 // 删除节点
-                client.delete().forPath("/head");
+                client.delete().forPath(PATH_2);
             }
-            String data = client.create().forPath("/head", "hello world".getBytes());
+            String data = client.create().forPath(PATH_2, "hello world".getBytes());
             System.out.println("data:..." + data);
 
             // 获取节点数据.
-            byte[] bytes = client.getData().watched().forPath("/head");
-            System.out.println("/head 节点数据:"+ new String(bytes));
+            byte[] bytes = client.getData().watched().forPath(PATH_2);
+            System.out.println(PATH_2+" 节点数据:"+ new String(bytes));
 
         } catch (Exception e) {
             e.printStackTrace();
